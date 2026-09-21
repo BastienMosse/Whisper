@@ -1,0 +1,3 @@
+whisper
+*.db
+.env

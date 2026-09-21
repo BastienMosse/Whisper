@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Whisper - Partage de secrets</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <div class="page">
+        <div class="brand">
+            <div class="brand-icon">
+                <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            </div>
+            <h1>Whisper</h1>
+        </div>
+        <p class="tagline">Echangez vos secrets en toute sécurité</p>
+
+        <div id="create-view" class="card fade-up">
+            <div class="field">
+                <label>Votre secret</label>
+                <textarea id="content" placeholder="Tapez votre message confidentiel ici..." maxlength="50000"></textarea>
+                <div class="char-count"><span id="char-count">0</span> / 50 000</div>
+            </div>
+
+            <div class="row">
+                <div class="field">
+                    <label>Expire après</label>
+                    <select id="duration">
+                        <option value="5m">5 minutes</option>
+                        <option value="30m">30 minutes</option>
+                        <option value="1h">1 heure</option>
+                        <option value="24h" selected>24 heures</option>
+                        <option value="7d">7 jours</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label>Ouvertures <span class="hint">max</span></label>
+                    <input type="number" id="max-views" value="1" min="1" max="100">
+                </div>
+            </div>
+
+            <div class="field">
+                <label>Mot de passe <span class="hint">(optionnel)</span></label>
+                <input type="password" id="password" placeholder="Laisser vide si aucun">
+            </div>
+
+            <button class="btn-primary" id="create-btn" onclick="createSecret()">
+                Générer le lien secret
+            </button>
+        </div>
+
+        <div id="result-view" class="card fade-up">
+            <div class="success-icon">
+                <svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>
+            </div>
+            <p class="result-title">Lien créé !</p>
+            <p class="result-sub">Partagez-le, il ne fonctionnera qu'un nombre limité de fois.</p>
+
+            <div class="link-box">
+                <input type="text" id="result-url" readonly>
+                <button class="copy-btn-inline" id="copy-btn" onclick="copyLink()">Copier</button>
+            </div>
+
+            <div class="result-meta">
+                <span class="meta-tag" id="meta-duration">
+                    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                    <span></span>
+                </span>
+                <span class="meta-tag" id="meta-views">
+                    <svg viewBox="0 0 24 24"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7"/><circle cx="12" cy="12" r="3"/></svg>
+                    <span></span>
+                </span>
+            </div>
+
+            <button class="btn-secondary" onclick="resetForm()">Créer un nouveau secret</button>
+        </div>
+
+        <div class="features">
+            <div class="feature">
+                <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                <strong>Chiffré</strong>
+                <p>AES-256 côté serveur</p>
+            </div>
+            <div class="feature">
+                <svg viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                <strong>Éphémère</strong>
+                <p>Supprimé après lecture</p>
+            </div>
+            <div class="feature">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                <strong>Temporaire</strong>
+                <p>Expiration configurable</p>
+            </div>
+        </div>
+
+        <p class="footer"><a href="/">lucipher-lab</a></p>
+    </div>
+
+    <script>
+        const contentEl = document.getElementById('content');
+        contentEl.addEventListener('input', () => {
+            document.getElementById('char-count').textContent = contentEl.value.length.toLocaleString('fr-FR');
+        });
+
+        async function createSecret() {
+            const content = contentEl.value.trim();
+            if (!content) { contentEl.focus(); return; }
+
+            const btn = document.getElementById('create-btn');
+            btn.disabled = true;
+            btn.textContent = 'Création...';
+
+            try {
+                const body = {
+                    content,
+                    password: document.getElementById('password').value,
+                    duration: document.getElementById('duration').value,
+                    max_views: parseInt(document.getElementById('max-views').value) || 1,
+                };
+                const r = await fetch('/api/secrets', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body),
+                });
+                if (!r.ok) throw new Error();
+                const data = await r.json();
+
+                const base = window.location.origin;
+                document.getElementById('result-url').value = base + '/secret/' + data.id;
+
+                const dur = document.getElementById('duration').selectedOptions[0].text;
+                const views = document.getElementById('max-views').value;
+                document.getElementById('meta-duration').querySelector('span').textContent = dur;
+                document.getElementById('meta-views').querySelector('span').textContent = views + ' vue' + (views > 1 ? 's' : '');
+
+                document.getElementById('create-view').style.display = 'none';
+                document.getElementById('result-view').style.display = '';
+            } catch {
+                alert('Erreur lors de la création');
+            }
+            btn.disabled = false;
+            btn.textContent = 'Générer le lien secret';
+        }
+
+        function copyLink() {
+            navigator.clipboard.writeText(document.getElementById('result-url').value);
+            const btn = document.getElementById('copy-btn');
+            btn.textContent = 'Copié !';
+            btn.classList.add('copied');
+            setTimeout(() => { btn.textContent = 'Copier'; btn.classList.remove('copied'); }, 2000);
+        }
+
+        function resetForm() {
+            document.getElementById('create-view').style.display = '';
+            document.getElementById('result-view').style.display = 'none';
+            contentEl.value = '';
+            document.getElementById('password').value = '';
+            document.getElementById('max-views').value = '1';
+            document.getElementById('char-count').textContent = '0';
+        }
+    </script>
+</body>
+</html>
