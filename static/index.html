@@ -6,7 +6,8 @@
     <title>Whisper - Partage de secrets</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/style.css">
+    <script>document.write('<base href="'+location.pathname.replace(/\/secret\/.*$/,'/').replace(/\/?$/,'/')+'">')</script>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="page">
@@ -120,7 +121,7 @@
                     duration: document.getElementById('duration').value,
                     max_views: parseInt(document.getElementById('max-views').value) || 1,
                 };
-                const r = await fetch('/api/secrets', {
+                const r = await fetch('api/secrets', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(body),
@@ -128,8 +129,8 @@
                 if (!r.ok) throw new Error();
                 const data = await r.json();
 
-                const base = window.location.origin;
-                document.getElementById('result-url').value = base + '/secret/' + data.id;
+                const basePath = window.location.pathname.replace(/\/?$/, '');
+                document.getElementById('result-url').value = window.location.origin + basePath + '/secret/' + data.id;
 
                 const dur = document.getElementById('duration').selectedOptions[0].text;
                 const views = document.getElementById('max-views').value;

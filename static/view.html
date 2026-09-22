@@ -6,11 +6,12 @@
     <title>Whisper - Secret</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/style.css">
+    <script>document.write('<base href="'+location.pathname.replace(/\/secret\/.*$/,'/').replace(/\/?$/,'/')+'">')</script>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="page">
-        <a href="/" class="brand">
+        <a href="." class="brand">
             <div class="brand-icon">
                 <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
             </div>
@@ -28,7 +29,7 @@
             </div>
             <p class="state-title">Secret introuvable</p>
             <p class="state-sub">Ce secret a été supprimé, a expiré, ou n'existe pas.</p>
-            <a href="/" style="text-decoration:none"><button class="btn-secondary">Créer un secret</button></a>
+            <a href="." style="text-decoration:none"><button class="btn-secondary">Créer un secret</button></a>
         </div>
 
         <div id="password-view" class="card fade-up hidden">
@@ -90,7 +91,7 @@
                 </button>
             </div>
 
-            <a href="/" style="text-decoration:none"><button class="btn-secondary">Créer un secret</button></a>
+            <a href="." style="text-decoration:none"><button class="btn-secondary">Créer un secret</button></a>
         </div>
 
         <p class="footer"><a href="/">lucipher-lab</a></p>
@@ -117,7 +118,7 @@
         async function init() {
             if (!secretId) { showView('not-found'); return; }
             try {
-                const r = await fetch('/api/secrets/' + secretId + '/info');
+                const r = await fetch('api/secrets/' + secretId + '/info');
                 if (!r.ok) { showView('not-found'); return; }
                 const info = await r.json();
 
@@ -138,7 +139,7 @@
 
         async function revealSecret(password) {
             try {
-                const r = await fetch('/api/secrets/' + secretId, {
+                const r = await fetch('api/secrets/' + secretId, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ password: password || '' }),
