@@ -6,8 +6,7 @@
     <title>Whisper - Partage de secrets</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
-    <script>document.write('<base href="'+location.pathname.replace(/\/secret\/.*$/,'/').replace(/\/?$/,'/')+'">')</script>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="/style.css">
 </head>
 <body>
     <div class="page">
@@ -97,7 +96,7 @@
             </div>
         </div>
 
-        <p class="footer"><a href="/">lucipher-lab</a></p>
+        <p class="footer"><a href="https://lucipher-lab.fr">lucipher-lab</a></p>
     </div>
 
     <script>
@@ -121,7 +120,7 @@
                     duration: document.getElementById('duration').value,
                     max_views: parseInt(document.getElementById('max-views').value) || 1,
                 };
-                const r = await fetch('api/secrets', {
+                const r = await fetch('/api/secrets', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(body),
@@ -129,8 +128,7 @@
                 if (!r.ok) throw new Error();
                 const data = await r.json();
 
-                const basePath = window.location.pathname.replace(/\/?$/, '');
-                document.getElementById('result-url').value = window.location.origin + basePath + '/secret/' + data.id;
+                document.getElementById('result-url').value = window.location.origin + '/secret/' + data.id;
 
                 const dur = document.getElementById('duration').selectedOptions[0].text;
                 const views = document.getElementById('max-views').value;
@@ -138,7 +136,7 @@
                 document.getElementById('meta-views').querySelector('span').textContent = views + ' vue' + (views > 1 ? 's' : '');
 
                 document.getElementById('create-view').style.display = 'none';
-                document.getElementById('result-view').style.display = '';
+                document.getElementById('result-view').style.display = 'block';
             } catch {
                 alert('Erreur lors de la création');
             }
